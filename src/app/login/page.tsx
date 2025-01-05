@@ -5,6 +5,7 @@ import LoginForm from '@/app/ui/login/login-form';
 import { auth } from '@/app/lib/auth';
 import { redirect } from 'next/navigation';
 
+// Define custom SignUp Page
 export default async function LoginPage() {
   const session = await auth();
   if(session?.user){

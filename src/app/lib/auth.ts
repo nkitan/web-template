@@ -19,6 +19,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
       }),
   ],
+  pages: {
+    signIn: "/login",
+  },
   callbacks: {
     async session({ session, token }) {
       session.user.role = token.role;

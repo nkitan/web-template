@@ -41,8 +41,7 @@ export const authenticate = async (
       password: formData.get('password'),
       redirect: false
     };
-    const res = await signIn("credentials", options);
-    console.log("res", res);
+    await signIn("credentials", options);
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {

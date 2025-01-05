@@ -1,6 +1,7 @@
 import AcmeLogo from '@/components/ui/acme-logo';
 import SignUpForm from '@/app/ui/signup/signup-form';
- 
+
+// Define custom SignUp Page
 export default function SignUpPage() {
   return (
     <main className="flex items-center justify-center md:h-screen">
