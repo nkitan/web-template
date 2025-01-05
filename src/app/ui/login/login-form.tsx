@@ -9,13 +9,16 @@ import {
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from '@/components/ui/button';
 import { useActionState } from 'react';
-import { authenticate } from '@/app/lib/auth';
- 
-export default function LoginForm() {
+import { authenticate } from '@/app/lib/auth.actions';
+import { Session } from 'next-auth';
+
+export default function LoginForm({ session }: {session : Session | null}) {
   const [errorMessage, formAction, isPending] = useActionState(
     authenticate,
     undefined,
   );
+
+  console.log("Session:", session);
  
   return (
     <form action={formAction} className="space-y-3">
