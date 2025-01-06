@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from 'next-auth';
 
+const showMessages = false;
 export const authConfig = {
   pages: {
     signIn: '/login',
@@ -23,33 +24,19 @@ export const authConfig = {
   },
   providers: [], // Add providers with an empty array for now
   session: {
-    // Choose how you want to save the user session.
-    // The default is `"jwt"`, an encrypted JWT (JWE) stored in the session cookie.
-    // If you use an `adapter` however, we default it to `"database"` instead.
-    // You can still force a JWT session by explicitly defining `"jwt"`.
-    // When using `"database"`, the session cookie will only contain a `sessionToken` value,
-    // which is used to look up the session in the database.
     strategy: "jwt",
-  
-    // Seconds - How long until an idle session expires and is no longer valid.
-    maxAge: 7 * 24 * 60 * 60, // 7 days
-  
-    // Seconds - Throttle how frequently to write to database to extend a session.
-    // Use it to limit write operations. Set to 0 to always update the database.
-    // Note: This option is ignored if using JSON Web Tokens
-    updateAge: 24 * 60 * 60, // 24 hours
   },
   jwt: {
     // The maximum age of the NextAuth.js issued JWT in seconds.
     // Defaults to `session.maxAge`.
-    maxAge: 1 * 24 * 60 * 60, // 1 Day
+    maxAge: parseInt(process.env.ACCESS_TOKEN_EXPIRY_INTERVAL || "600"), // 10 minutes
   },
   events: {
-    async signIn(message) { console.log(`User Signed In: `, message) /* on successful sign in */ },
-    async signOut(message) { console.log(`User Signed Out: `, message) /* on signout */ },
-    async createUser(message) { console.log(`User Created: `, message) /* user created */ },
-    async updateUser(message) { console.log(`User Updated: `, message) /* user updated - e.g. their email was verified */ },
-    async linkAccount(message) { console.log(`Account Linked To A user: `, message) /* account (e.g. Twitter) linked to a user */ },
-    async session(message) { console.log(`Active Session: `, message) /* session is active */ },
+    async signIn(message) { if(showMessages) console.log(`User Signed In: `, message) /* on successful sign in */ },
+    async signOut(message) { if(showMessages) console.log(`User Signed Out: `, message) /* on signout */ },
+    async createUser(message) { if(showMessages) console.log(`User Created: `, message) /* user created */ },
+    async updateUser(message) { if(showMessages) console.log(`User Updated: `, message) /* user updated - e.g. their email was verified */ },
+    async linkAccount(message) { if(showMessages) console.log(`Account Linked To A user: `, message) /* account (e.g. Twitter) linked to a user */ },
+    async session(message) { if(showMessages) console.log(`Active Session: `, message) /* session is active */ },
   }
 } satisfies NextAuthConfig;

@@ -1,13 +1,14 @@
 'use server';
  
 import { AuthError } from "next-auth";
-import { parseZodError } from "@/app/lib/utils";
+import { getRefreshTokenExpiryInterval, parseZodError } from "@/app/lib/utils";
 import { PrismaClient, User } from "@prisma/client";
 import { z } from 'zod';
 import * as bcrypt from 'bcrypt';
 import { redirect, RedirectType } from "next/navigation";
 import { PrismaClientInitializationError, PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { signIn } from "@/app/lib/auth";
+import { randomUUID } from "crypto";
 
 const prisma = new PrismaClient();
 
@@ -28,6 +29,18 @@ export async function getUser(email: string): Promise<User | null> {
     }
     console.log(`Unknown error occurred while fetching user: ${error}`)
     throw new Error(`Failed to fetch user.`)
+  }
+}
+
+const update_refresh_token = async (email: string) => {
+  try {
+    const user = await prisma.user.update({
+      where: { email: email },
+      data : {refresh_token: randomUUID(), refresh_token_expiry: Date.now() + getRefreshTokenExpiryInterval()}
+    });
+    console.log("User Refresh Token Updated: ", user);
+  } catch (error) {
+    console.log(error.stack)
   }
 }
 
@@ -78,47 +91,55 @@ export const signUp = async (
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
+      const refresh_token_expiry = Date.now() + getRefreshTokenExpiryInterval();
 
       // Create a new user if user is unique
       const newUser = {
         name: username,
         email,
         password: hashedPassword,
+        refresh_token_expiry: refresh_token_expiry,
       };
 
-      const createdUser = await prisma.user.create({
+      const createdUser: User = await prisma.user.create({
         data: newUser
       });
-      console.log("Added User: ", createdUser);
-      
+
+      if(createdUser === null || createdUser === undefined){
+        throw "Failed to create user"
+      }
+
       try {
         const options = {
           email: formData.get('email'),
           password: formData.get('password'),
           redirect: false,
         };
+
         // Try to sign in
         await signIn("credentials", options);
       } catch (error) {
-        console.log(`Error while logging in: ${error}`)
-        throw new Error(`Error while logging in: ${error}`)
+        console.log("Error while logging in:", error.stack)
+        throw "Error while logging in"
       }
 
     } else if (parsedCredentials.error) {
+      console.log("PCERROR: ", parsedCredentials.error);
       throw parsedCredentials.error;
     } else {
-      throw new Error("Unknown Error While Parsing");
+      throw "Unknown Error While Parsing";
     }
-
   } catch (error) {
     if (error instanceof z.ZodError) {
       return parseZodError(error);
     }
-    
-    if (!error && error != null){
-      console.log("ERROR: ", error);
+
+    if(error !== null && error !== undefined){
+      console.error("UNKNOWN ERROR: ", error.stack)
+    } else {
+      console.log("UNKNOWN ERROR: UNDEFINED/NULL")
     }
-  
+
     return "An Unknown Error Occurred";
   }
   redirect("/login");
@@ -132,9 +153,16 @@ export async function validate(credentials: object){
   if (parsedCredentials.success) {
       const { email, password } = parsedCredentials.data;
       const user = await getUser(email);
-      if (!user || user == null) return null;
+
+      if (!user || user == null) {
+        return null;
+      }
+
       const passwordsMatch = await bcrypt.compare(password, user.password);
-      if (passwordsMatch) return user;
+      if (passwordsMatch) {
+        update_refresh_token(user.email);
+        return user;
+      }
   }
 
   return null;

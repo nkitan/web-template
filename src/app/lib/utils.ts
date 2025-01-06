@@ -36,15 +36,19 @@ export const isValidSession = (session: Session | null) => {
 }
 
 export const hasRole = async (session: Session | null, role: Role) => {
-  if(!isValidSession(session)) {
+  if(session === null || session === undefined || session.user === undefined){
     return false;
   }
   return session?.user.role === role;
 };
 
 export const hasAnyRole = async (session: Session | null, roles: Role[]) => {
-  if(!isValidSession(session)) {
+  if(session === null || session === undefined || session.user === undefined){
     return false;
   }
-  return roles.includes(session?.user.role || "");
+  return roles.includes(session?.user.role as Role|| "");
 };
+
+export const getRefreshTokenExpiryInterval = () => {
+  return (parseInt(process.env.REFRESH_TOKEN_EXPIRY_INTERVAL || "172800") * 1000)
+}
