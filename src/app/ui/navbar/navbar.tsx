@@ -13,10 +13,10 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="p-2 top-0 z-50">
-        <div className="bg-white opacity-95 text-black mx-2 mt-2 rounded-lg p-4">
-            <div className="container mx-auto flex justify-between items-center">
-                <div className="text-black text-xl font-bold">
+    <nav className="top-0 z-50 w-full">
+        <div className="bg-white opacity-95 text-black mx-2 mt-2 rounded-lg p-4 w-full">
+            <div className="flex justify-between items-center mx-4">
+                <div className="text-black text-2xl font-extralight">
                   <Link href="/">{process.env.APP_NAME}</Link>
                 </div>
                 <div className="flex align-middle items-center text-center flex-row">

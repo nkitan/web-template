@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     APP_NAME: process.env.APP_NAME,
     APP_REPO: process.env.APP_REPO,
     REFRESH_TOKEN_EXPIRY_INTERVAL: `${2 * 24 * 60 * 60}`,
-    ACCESS_TOKEN_EXPIRY_INTERVAL: `${10 * 60}`
+    ACCESS_TOKEN_EXPIRY_INTERVAL: `${10}`
   },
 };
 

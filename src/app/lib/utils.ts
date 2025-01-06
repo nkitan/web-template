@@ -52,3 +52,7 @@ export const hasAnyRole = async (session: Session | null, roles: Role[]) => {
 export const getRefreshTokenExpiryInterval = () => {
   return (parseInt(process.env.REFRESH_TOKEN_EXPIRY_INTERVAL || "172800") * 1000)
 }
+
+export const getAccessTokenExpiryInterval = () => {
+  return (parseInt(process.env.ACCESS_TOKEN_EXPIRY_INTERVAL || "10") * 1000)
+}

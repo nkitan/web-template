@@ -1,4 +1,5 @@
 import type { NextAuthConfig } from 'next-auth';
+import { getAccessTokenExpiryInterval } from '@/app/lib/utils';
 
 const showMessages = false;
 export const authConfig = {
@@ -25,11 +26,12 @@ export const authConfig = {
   providers: [], // Add providers with an empty array for now
   session: {
     strategy: "jwt",
+    maxAge: getAccessTokenExpiryInterval(),
   },
   jwt: {
     // The maximum age of the NextAuth.js issued JWT in seconds.
     // Defaults to `session.maxAge`.
-    maxAge: parseInt(process.env.ACCESS_TOKEN_EXPIRY_INTERVAL || "600"), // 10 minutes
+    maxAge: getAccessTokenExpiryInterval(), // 10 minutes
   },
   events: {
     async signIn(message) { if(showMessages) console.log(`User Signed In: `, message) /* on successful sign in */ },

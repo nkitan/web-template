@@ -3,12 +3,16 @@ import { authConfig } from "@/app/lib/auth.config";
 import Credentials from 'next-auth/providers/credentials';
 import { getUser, validate } from "@/app/lib/auth.actions";
 import { DefaultSession } from "next-auth";
+import { getAccessTokenExpiryInterval } from "./utils";
+
+const isDebug: boolean = false;
 
 declare module "next-auth" {
   interface Session {
     user?: {
       user_id: string | undefined;
       role: string;
+      accessTokenExpiry: Date | undefined;
     } & DefaultSession["user"];
     expires_in: Date;
     error?: "RefreshTokenInvalidError" | "RefreshTokenExpiredError"
@@ -80,6 +84,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.user_id = token.sub;
         session.user.role = token.role;
         session.expires_in = new Date(parseInt(token.refresh_token_expiry));
+        if(token.exp !== undefined) {
+          session.user.accessTokenExpiry = new Date(token.exp * 1000);
+        } else {
+          session.user.accessTokenExpiry = undefined
+        }
       }
       return session;
     },
@@ -96,21 +105,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       // On subsequent useSessions, if token is expired
       if (!token.exp || Date.now() > token.exp * 1000) {
-        console.warn("Token has expired, trying to refresh")
+        if(isDebug) console.warn("Token has expired, trying to refresh")
         // Token is expired or no token expiry provided
         // Try to use refresh token
 
         if(!token.refresh_token) {
-          console.error(`No refresh token found`)
+          if(isDebug) console.error(`No refresh token found`)
           // Doesn't even have refresh_token, invalid request, return error
           throw "RefreshTokenInvalidError";
         }
 
         // If refresh token is valid and isn't expired, 
         if(await isValidRefreshToken(token.email, token.refresh_token)) {
-          console.log(`We have a valid refresh token, extending the current expiry from ${new Date(token.exp || 0)}`)
-          token.exp = Date.now() + (10 * 60 * 1000) // Extend token by 10 minutes
-          console.log(`to ${new Date(token.exp || 0)}`)
+          if(isDebug) console.log(`We have a valid refresh token, extending the current expiry from ${new Date(token.exp || 0)}`)
+          token.exp = Date.now() + getAccessTokenExpiryInterval(); // Extend token by 10 minutes
+          if(isDebug) console.log(`to ${new Date(token.exp || 0)}`)
         } else {
           throw "RefreshTokenExpiredError"
         }

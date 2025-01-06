@@ -10,6 +10,7 @@ import { PrismaClientInitializationError, PrismaClientKnownRequestError } from "
 import { signIn } from "@/app/lib/auth";
 import { randomUUID } from "crypto";
 
+const isDebug: boolean = false;
 const prisma = new PrismaClient();
 
 export async function getUser(email: string): Promise<User | null> {
@@ -38,7 +39,7 @@ const update_refresh_token = async (email: string) => {
       where: { email: email },
       data : {refresh_token: randomUUID(), refresh_token_expiry: Date.now() + getRefreshTokenExpiryInterval()}
     });
-    console.log("User Refresh Token Updated: ", user);
+    if(isDebug) console.log("User Refresh Token Updated: ", user);
   } catch (error) {
     console.log(error.stack)
   }
@@ -64,6 +65,8 @@ export const authenticate = async (
           console.log("Unknown AuthError: ", error.cause);
           return 'Something went wrong.';
       }
+    } else {
+      console.log("Unknown Error: ", error.cause);
     }
   }
   redirect("/dashboard", RedirectType.push);
@@ -117,6 +120,7 @@ export const signUp = async (
         };
 
         // Try to sign in
+        
         await signIn("credentials", options);
       } catch (error) {
         console.log("Error while logging in:", error.stack)
