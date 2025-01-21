@@ -11,6 +11,7 @@ services:
     volumes:
       - postgres1_data:/var/lib/postgresql/data
       - ./init-postgres1.sh:/docker-entrypoint-initdb.d/init-postgres1.sh:ro
+      - ./.env:/docker-entrypoint-initdb.d/.env:ro
     command: >
       postgres -c wal_level=logical
                -c max_replication_slots=5
@@ -31,6 +32,7 @@ services:
     volumes:
       - postgres2_data:/var/lib/postgresql/data
       - ./init-postgres2.sh:/docker-entrypoint-initdb.d/init-postgres2.sh:ro
+      - ./.env:/docker-entrypoint-initdb.d/.env:ro
     command: >
       postgres -c wal_level=logical
                -c max_replication_slots=5
@@ -51,13 +53,30 @@ services:
       PGPOOL_ADMIN_USERNAME: ${PGPOOL_ADMIN_USERNAME}
       PGPOOL_ADMIN_PASSWORD: ${PGPOOL_ADMIN_PASSWORD}
     ports:
-      - "5434:5432" # Connect to pgpool:5432
+      - "5434:5432" # Connect to pgpool:5434
+    networks:
+      - replication_network
+  
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@domain.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "8888:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
     networks:
       - replication_network
 
 volumes:
   postgres1_data:
   postgres2_data:
+  pgadmin-data:
 
 networks:
   replication_network:
