@@ -26,6 +26,7 @@ $ cd web-template
 $ pnpx prisma migrate dev
 $ pnpm run dev
 ```
+The webpage can then be accessed at http://localhost:3000
 
 ## Maintainers
 
