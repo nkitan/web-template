@@ -40,8 +40,12 @@ const update_refresh_token = async (email: string) => {
       data : {refresh_token: randomUUID(), refresh_token_expiry: Date.now() + getRefreshTokenExpiryInterval()}
     });
     if(isDebug) console.log("User Refresh Token Updated: ", user);
-  } catch (error) {
-    console.log(error.stack)
+  } catch (error: unknown) {
+    if(error instanceof Error){
+      console.log(error.stack)
+    } else {
+      console.log("Unknown Error Type: ", error);
+    }
   }
 }
 
@@ -56,17 +60,21 @@ export const authenticate = async (
       redirect: false
     };
     await signIn("credentials", options);
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
-          return 'Invalid credentials.';
+          return 'Invalid credentials';
+        case 'CallbackRouteError':
+          return 'Something went wrong';
         default:
           console.log("Unknown AuthError: ", error.cause);
-          return 'Something went wrong.';
+          return 'Something went wrong';
       }
+    } else if (error instanceof Error) {
+      console.log("Encountered Error: ", error.cause);
     } else {
-      console.log("Unknown Error: ", error.cause);
+      console.log("Unknown Error Type: ", error);
     }
   }
   redirect("/dashboard", RedirectType.push);
@@ -122,8 +130,8 @@ export const signUp = async (
         // Try to sign in
         
         await signIn("credentials", options);
-      } catch (error) {
-        console.log("Error while logging in:", error.stack)
+      } catch (error: unknown) {
+        console.log("Error while logging in:", error)
         throw "Error while logging in"
       }
 
@@ -133,17 +141,14 @@ export const signUp = async (
     } else {
       throw "Unknown Error While Parsing";
     }
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return parseZodError(error);
-    }
-
-    if(error !== null && error !== undefined){
-      console.error("UNKNOWN ERROR: ", error.stack)
+    } else if(error instanceof Error){
+      console.error("Encountered Error: ", error.stack)
     } else {
-      console.log("UNKNOWN ERROR: UNDEFINED/NULL")
+      console.log("Unknown Error Type: ", error);
     }
-
     return "An Unknown Error Occurred";
   }
   redirect("/login");
