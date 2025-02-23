@@ -16,7 +16,7 @@ export default function Page() {
     if(status === "authenticated") {
       setRefreshTokenExpiry(session.expires_in);
     }
-  }, [status])
+  }, [session?.expires_in, status])
 
   useEffect(() => {
     setAccessTokenExpiry(session?.user?.accessTokenExpiry);
@@ -35,9 +35,9 @@ export default function Page() {
   return (
     <div className={`${geistMono.className} font-extralight `}>
           <h1 className={`text-[40px] font-light`}>Hi {user?.name}, Welcome to your Dashboard</h1>
-          <p>Refresh Token Expiry: {refreshTokenExpiry === undefined ? "Loading..." : new Date(refreshTokenExpiry).toLocaleString()}</p>
-          <p>Access Token Expiry: {accessTokenExpiry === undefined ? "Loading..." : new Date(accessTokenExpiry).toLocaleString()}</p>
-          <p>Current Time: {time.toLocaleString()}</p>
+          <div>Refresh Token Expiry: {refreshTokenExpiry === undefined ? "Loading..." : new Date(refreshTokenExpiry).toLocaleString()}</div>
+          <div>Access Token Expiry: {accessTokenExpiry === undefined ? "Loading..." : new Date(accessTokenExpiry).toLocaleString()}</div>
+          <div>Current Time: {time.toLocaleString()}</div>
     </div>
   );
 }
